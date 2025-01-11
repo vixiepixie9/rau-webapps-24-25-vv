@@ -214,82 +214,151 @@ document.addEventListener("DOMContentLoaded", () => {
     const bookReviewInput = document.getElementById("book-review");
     const addReviewButton = document.getElementById("addReviewButton");
     const closeModalButton = reviewModal.querySelector(".close");
-    const reviewsSection = document.getElementById("reviews-container");
+    const reviewsContainer = document.getElementById("reviews-container");
+    const toBeReviewedBooks = document.querySelectorAll(".to-be-reviewed .book");
 
-    const toBeReviewedBooks = document.querySelectorAll(".to-be-reviewed .book-cover");
+    // Функция за извличане на ревютата от Local Storage
+    const getReviewsFromLocalStorage = () => {
+        return JSON.parse(localStorage.getItem("bookReviews")) || [];
+    };
 
-    // Open modal on book cover click
-    toBeReviewedBooks.forEach((cover) => {
-        cover.addEventListener("click", (e) => {
-            const bookElement = e.target.closest(".book");
-            const title = bookElement.querySelector(".book-title").textContent;
-            const author = bookElement.querySelector(".book-author").textContent;
-            const coverSrc = e.target.src;
+    // Функция за запис на ревюта в Local Storage
+    const saveReviewsToLocalStorage = (reviews) => {
+        localStorage.setItem("bookReviews", JSON.stringify(reviews));
+    };
 
-            // Populate modal with book data
-            modalBookCover.src = coverSrc;
-            bookTitleInput.value = title;
-            bookAuthorInput.value = author || "";
+    // Функция за показване на ревюта
+    const displayReviews = () => {
+        const reviews = getReviewsFromLocalStorage();
+        reviewsContainer.innerHTML = ''; // Изчистваме текущите ревюта, преди да добавим новите
 
-            // Show modal
+        reviews.forEach((review, index) => {
+            const reviewDiv = document.createElement("div");
+            reviewDiv.classList.add("review-section");
+            reviewDiv.id = `review${index}`;
+
+            reviewDiv.innerHTML = `
+            <div class="review-header">
+                <img src="./images/360_F_266724172_Iy8gdKgMa7XmrhYYxLCxyhx6J7070Pr8.jpg" alt="User Profile" class="user-profile">
+                <span class="user-name">Test User</span>
+                <span class="delete-review" data-index="${index}">X</span>
+            </div>
+            <div class="review-body">
+                <img src="${review.cover}" alt="Book Cover" class="book-cover">
+                <div class="book-details">
+                    <h3 class="book-title">${review.title}</h3>
+                    <p class="review-text">
+                        '${review.text}'
+                        <a href="#" class="more-link">More...</a>
+                    </p>
+                </div>
+            </div>
+            <div class="review-footer">
+                <span class="like-count" style="display: none;">
+                    <img src="./images/25297.png" alt="Thumbs Up" class="thumb-icon">
+                    <span class="like-number">${review.likeCount}</span>
+                </span>
+                <a href="#" class="action-link like-link" onclick="toggleLike(this)">Like</a>
+                <a href="#" class="action-link">Comment</a>
+            </div>
+            <div class="comment-section">
+                <img src="./images/360_F_266724172_Iy8gdKgMa7XmrhYYxLCxyhx6J7070Pr8.jpg" alt="Your Profile" class="comment-profile">
+                <input type="text" placeholder="Leave a comment..." class="comment-input">
+            </div>
+        `;        
+
+            reviewsContainer.appendChild(reviewDiv);
+        });
+
+        // Добавяне на обработчик за бутона за изтриване
+        document.querySelectorAll(".delete-review").forEach((deleteButton) => {
+            deleteButton.addEventListener("click", (event) => {
+                const index = event.target.dataset.index;
+                deleteReview(index);
+            });
+        });
+    };
+
+    const deleteReview = (index) => {
+        // Вземаме всички ревюта от Local Storage
+        const reviews = getReviewsFromLocalStorage();
+        
+        // Премахваме избраното ревю
+        reviews.splice(index, 1);
+        
+        // Записваме обновените ревюта в Local Storage
+        saveReviewsToLocalStorage(reviews);
+        
+        // Обновяваме списъка с ревюта
+        displayReviews();
+    };  
+
+    // Отваряне на модалния прозорец при клик върху книга
+    toBeReviewedBooks.forEach((book) => {
+        book.addEventListener("click", () => {
+            const bookCover = book.querySelector("img").src;
+
+            // Задаване на изображението в модалния прозорец
+            modalBookCover.src = bookCover;
+
+            // Отваряне на модалния прозорец
             reviewModal.style.display = "block";
         });
     });
 
-    // Close modal
+    // Затваряне на модалния прозорец
     closeModalButton.addEventListener("click", () => {
         reviewModal.style.display = "none";
-        bookReviewInput.value = ""; // Clear review input
+
+        // Изчистване на полетата за вход
+        bookTitleInput.value = "";
+        bookAuthorInput.value = "";
+        bookReviewInput.value = "";
     });
 
-    // Add review
+    // Добавяне на ревю в Local Storage
     addReviewButton.addEventListener("click", () => {
-        const title = bookTitleInput.value;
-        const author = bookAuthorInput.value;
-        const review = bookReviewInput.value;
-        const coverSrc = modalBookCover.src;
+        const reviewTitle = bookTitleInput.value;
+        const reviewAuthor = bookAuthorInput.value;
+        const reviewText = bookReviewInput.value;
+        const reviewCover = modalBookCover.src;
 
-        if (!title || !author || !review) {
-            alert("Please fill in all fields!");
+        if (!reviewTitle || !reviewAuthor || !reviewText) {
+            alert("Моля, попълнете всички полета!");
             return;
         }
 
-        const newReview = { title, author, review, coverSrc };
+        // Вземане на текущите ревюта от Local Storage
+        const reviews = getReviewsFromLocalStorage();
 
-        // Save to local storage
-        const reviews = JSON.parse(localStorage.getItem("bookReviews")) || [];
-        reviews.unshift(newReview);
-        localStorage.setItem("bookReviews", JSON.stringify(reviews));
+        // Добавяне на новото ревю с фиксирана профилна снимка и име
+        reviews.push({
+            title: reviewTitle,
+            author: reviewAuthor,
+            text: reviewText,
+            cover: reviewCover,
+            profilePic: "./images/360_F_266724172_Iy8gdKgMa7XmrhYYxLCxyhx6J7070Pr8.jpg", // Профилна снимка с котката
+            userName: "Test User", // Име на потребителя, което е фиксирано
+            likeCount: 1,
+        });
 
-        // Add review to page
-        addReviewToPage(newReview);
+        // Записване в Local Storage
+        saveReviewsToLocalStorage(reviews);
 
-        // Close modal
+        // Обновяване на ревютата
+        displayReviews();
+
+        // Затваряне на модалния прозорец
         reviewModal.style.display = "none";
-        bookReviewInput.value = ""; // Clear review input
+
+        // Изчистване на полетата
+        bookTitleInput.value = "";
+        bookAuthorInput.value = "";
+        bookReviewInput.value = "";
     });
 
-    // Load saved reviews
-    const savedReviews = JSON.parse(localStorage.getItem("bookReviews")) || [];
-    savedReviews.forEach(addReviewToPage);
-
-    // Function to add review to the page
-    function addReviewToPage(review) {
-        const reviewItem = document.createElement("div");
-        reviewItem.classList.add("review");
-
-        reviewItem.innerHTML = `
-            <img src="${review.coverSrc}" alt="Book Cover" class="review-cover" />
-            <div class="review-details">
-                <h3 class="review-title">${review.title}</h3>
-                <p class="review-author">by ${review.author}</p>
-                <p class="review-text">${review.review}</p>
-            </div>
-        `;
-
-        // Add review at the beginning of the reviews section
-        reviewsSection.prepend(reviewItem);
-    }
+    // Показване на ревюта при зареждане на страницата
+    displayReviews();
 });
 
 //doesnt work
