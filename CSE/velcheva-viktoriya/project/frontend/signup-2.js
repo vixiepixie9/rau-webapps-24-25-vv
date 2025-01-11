@@ -1,33 +1,51 @@
 document.addEventListener('DOMContentLoaded', () => {
     const accessCameraButton = document.getElementById('accessCameraButton');
-    accessCameraButton.addEventListener('click', signupStep2);
-
-    const fileInput = document.getElementById('upload_id');
-    fileInput.addEventListener('change', updateFileName);
-    
     const takePhotoButton = document.getElementById('takePhotoButton');
-    takePhotoButton.addEventListener('click', takePhoto);
+    const fileInput = document.getElementById('photoUpload');
+    const step2Form = document.getElementById('step2Form');
+
+    // Активация на камерата
+    if (accessCameraButton) {
+        accessCameraButton.addEventListener('click', signupStep2);
+    }
+
+    // Заснемане на снимка
+    if (takePhotoButton) {
+        takePhotoButton.addEventListener('click', takePhoto);
+    }
+
+    // Актуализиране на име на файла при качване
+    if (fileInput) {
+        fileInput.addEventListener('change', updateFileName);
+    }
+
+    // Обработка на формата за втората стъпка
+    if (step2Form) {
+        step2Form.addEventListener('submit', handleStep2);
+    }
 });
 
-let photoTaken = false;
 let stream;
 
-async function signupStep2(event) {
+function signupStep2(event) {
     event.preventDefault();
 
     const video = document.getElementById('video');
-    const takePhotoButton = document.getElementById('takePhotoButton');
+    const takePhotoButton = document.getElementById('takePhotoButton'); // Вземи бутона "Take a picture"
 
-    try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = stream;
-        video.style.display = 'block';
-        takePhotoButton.style.display = 'block';
-        console.log("Camera access granted.");
-    } catch (err) {
-        console.error('Error accessing the camera:', err);
-        alert('Cannot access the camera. Please allow camera access or try another device.');
-    }
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(mediaStream => {
+            stream = mediaStream;
+            video.srcObject = stream;
+            video.style.display = 'block';
+
+            // Покажи бутона "Take a picture"
+            takePhotoButton.style.display = 'block'; 
+        })
+        .catch(err => {
+            console.error('Error accessing the camera:', err);
+            alert('Cannot access the camera. Please allow camera access.');
+        });
 }
 
 function takePhoto(event) {
@@ -41,92 +59,43 @@ function takePhoto(event) {
     canvas.height = video.videoHeight;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+    // Запазване на снимката като Data URL
+    const photoData = canvas.toDataURL('image/png');
+    const userData = JSON.parse(localStorage.getItem('userData')) || {};
+    userData.photo = photoData;
+
+    // Запазване на снимката в localStorage
+    localStorage.setItem('userData', JSON.stringify(userData));
+
     canvas.style.display = 'block';
     video.style.display = 'none';
-
-    const flash = document.getElementById('flash');
-    flash.style.display = 'block';
-    setTimeout(() => {
-        flash.style.display = 'none';
-    }, 200);
-
-    photoTaken = true;
-    const takePhotoButton = document.getElementById('takePhotoButton');
-    takePhotoButton.textContent = 'Retake a picture';
-}
-
-function retakePhoto(event) {
-    event.preventDefault();
-
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-
-    canvas.style.display = 'none';
-    video.style.display = 'block';
-
-    const takePhotoButton = document.getElementById('takePhotoButton');
-    takePhotoButton.textContent = 'Take a picture';
-
-    photoTaken = false;
-}
-
-const takePhotoButton = document.getElementById('takePhotoButton');
-takePhotoButton.addEventListener('click', function(event) {
-    if (photoTaken) {
-        retakePhoto(event);
-    } else {
-        takePhoto(event);
-    }
-});
-
-function handleIdUpload(event) {
-    event.preventDefault();
-
-    const fileInput = document.getElementById('upload_id');
-    
-    if (!photoTaken) {
-        alert("Please take a photo before continuing.");
-        return;
-    }
-
-    const fileUploaded = fileInput.files.length > 0;
-
-    if (!fileUploaded) {
-        alert("Please upload an ID picture before continuing.");
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('file', fileInput.files[0]);
-
-    const canvas = document.getElementById('canvas');
-    canvas.toBlob((blob) => {
-        formData.append('photo', blob, 'photo.png');
-
-        fetch('http://127.0.0.1:5001/complete-signup', {
-            method: 'POST',
-            body: formData 
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to complete signup');
-            }
-            return response.json();
-        })
-        .then(data => {
-            alert('Signup successful!');
-            window.location.href = 'signin.html';
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to complete signup: ' + error.message);
-        });
-    }, 'image/png');
 }
 
 function updateFileName() {
-    const fileInput = document.getElementById('upload_id');
+    const fileInput = document.getElementById('photoUpload');
     const fileLabel = document.getElementById('fileLabel');
+    fileLabel.textContent = fileInput.files.length > 0 ? fileInput.files[0].name : 'Choose a photo';
+}
+function handleStep2(event) {
+    event.preventDefault(); // Предотвратяване на презареждането на страницата
 
-    fileLabel.textContent = fileInput.files.length > 0 ? fileInput.files[0].name : 'Choose an ID picture';
+    const userData = JSON.parse(localStorage.getItem('userData')) || {};
+    
+    // Проверка дали снимката е добавена
+    const photoInput = document.getElementById('upload_id');
+    if (photoInput.files.length > 0) {
+        const file = photoInput.files[0];
+        userData.photo = file.name; // Снимката може да се запише в базата или localStorage
+    } else if (!userData.photo) {
+        alert('Please upload a photo or take a picture.');
+        return;
+    }
+
+    // Записване на данните в localStorage
+    localStorage.setItem('userData', JSON.stringify(userData));
+    console.log('Data submitted:', JSON.parse(localStorage.getItem('userData')));
+
+    // Пренасочване към signin.html
+    alert('Sign-up completed successfully!');
+    window.location.href = 'signin.html';
 }

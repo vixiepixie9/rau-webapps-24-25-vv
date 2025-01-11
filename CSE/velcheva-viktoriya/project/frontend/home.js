@@ -203,3 +203,93 @@ document.addEventListener("DOMContentLoaded", () => {
     // Зареждане на книгите при зареждане на страницата
     loadBooks();
 });
+
+// WORKING DONT TOUCH
+
+document.addEventListener("DOMContentLoaded", () => {
+    const reviewModal = document.getElementById("review-modal");
+    const modalBookCover = document.getElementById("modal-book-cover");
+    const bookTitleInput = document.getElementById("book-Title");
+    const bookAuthorInput = document.getElementById("book-Author");
+    const bookReviewInput = document.getElementById("book-review");
+    const addReviewButton = document.getElementById("addReviewButton");
+    const closeModalButton = reviewModal.querySelector(".close");
+    const reviewsSection = document.getElementById("reviews-container");
+
+    const toBeReviewedBooks = document.querySelectorAll(".to-be-reviewed .book-cover");
+
+    // Open modal on book cover click
+    toBeReviewedBooks.forEach((cover) => {
+        cover.addEventListener("click", (e) => {
+            const bookElement = e.target.closest(".book");
+            const title = bookElement.querySelector(".book-title").textContent;
+            const author = bookElement.querySelector(".book-author").textContent;
+            const coverSrc = e.target.src;
+
+            // Populate modal with book data
+            modalBookCover.src = coverSrc;
+            bookTitleInput.value = title;
+            bookAuthorInput.value = author || "";
+
+            // Show modal
+            reviewModal.style.display = "block";
+        });
+    });
+
+    // Close modal
+    closeModalButton.addEventListener("click", () => {
+        reviewModal.style.display = "none";
+        bookReviewInput.value = ""; // Clear review input
+    });
+
+    // Add review
+    addReviewButton.addEventListener("click", () => {
+        const title = bookTitleInput.value;
+        const author = bookAuthorInput.value;
+        const review = bookReviewInput.value;
+        const coverSrc = modalBookCover.src;
+
+        if (!title || !author || !review) {
+            alert("Please fill in all fields!");
+            return;
+        }
+
+        const newReview = { title, author, review, coverSrc };
+
+        // Save to local storage
+        const reviews = JSON.parse(localStorage.getItem("bookReviews")) || [];
+        reviews.unshift(newReview);
+        localStorage.setItem("bookReviews", JSON.stringify(reviews));
+
+        // Add review to page
+        addReviewToPage(newReview);
+
+        // Close modal
+        reviewModal.style.display = "none";
+        bookReviewInput.value = ""; // Clear review input
+    });
+
+    // Load saved reviews
+    const savedReviews = JSON.parse(localStorage.getItem("bookReviews")) || [];
+    savedReviews.forEach(addReviewToPage);
+
+    // Function to add review to the page
+    function addReviewToPage(review) {
+        const reviewItem = document.createElement("div");
+        reviewItem.classList.add("review");
+
+        reviewItem.innerHTML = `
+            <img src="${review.coverSrc}" alt="Book Cover" class="review-cover" />
+            <div class="review-details">
+                <h3 class="review-title">${review.title}</h3>
+                <p class="review-author">by ${review.author}</p>
+                <p class="review-text">${review.review}</p>
+            </div>
+        `;
+
+        // Add review at the beginning of the reviews section
+        reviewsSection.prepend(reviewItem);
+    }
+});
+
+//doesnt work
