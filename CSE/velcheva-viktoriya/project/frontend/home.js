@@ -1,4 +1,4 @@
-// Функция за Like/Dislike на ревю
+
 function likeReview(link) {
     const likeCount = link.previousElementSibling;
     const likeNumber = likeCount.querySelector('.like-number');
@@ -22,14 +22,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const modalAddButton = document.getElementById("modalAddButton");
     const discardButton = document.getElementById("discardButton");
     const currentlyReadingSection = document.getElementById("currently-reading");
-    const addBookButton = document.getElementById("addButton"); // Бутонът "Add a New Book"
+    const addBookButton = document.getElementById("addButton");
 
-    // Показване на модалния прозорец
     addBookButton.addEventListener("click", () => {
         addBookModal.style.display = "block";
     });
 
-    // Функция за зареждане на книгите от localStorage
     const loadBooks = () => {
         const books = JSON.parse(localStorage.getItem("currentlyReadingBooks")) || [];
         books.forEach((book) => {
@@ -46,7 +44,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
     
-        // Създаване на нов елемент за книгата
         const bookItem = document.createElement("div");
         bookItem.classList.add("book");
     
@@ -59,10 +56,8 @@ document.addEventListener("DOMContentLoaded", () => {
             <button class="delete-button">X</button>
         `;
     
-        // Добавяне на новата книга в списъка
         bookList.appendChild(bookItem);
     
-        // Скриване на съобщението "No added books"
         if (noBooksMessage) {
             noBooksMessage.style.display = "none";
         }
@@ -74,10 +69,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const bookReviewInput = document.getElementById("book-review");
             const closeModalButton = reviewModal.querySelector(".close");
         
-            const bookList = document.getElementById("currently-reading-list"); // Update with your book list container ID
-            const noBooksMessage = document.getElementById("no-books-message"); // Update with your message element ID
+            const bookList = document.getElementById("currently-reading-list");
+            const noBooksMessage = document.getElementById("no-books-message");
         
-            // Open modal on book cover click
             document.querySelectorAll(".book-cover").forEach((cover) => {
                 cover.addEventListener("click", (e) => {
                     const bookElement = e.target.closest(".book");
@@ -85,37 +79,30 @@ document.addEventListener("DOMContentLoaded", () => {
                     const author = bookElement.querySelector(".book-author").textContent;
                     const coverSrc = e.target.src;
         
-                    // Populate modal
                     modalBookCover.src = coverSrc;
                     bookTitleInput.value = title;
                     bookAuthorInput.value = author;
         
-                    // Show modal
                     reviewModal.style.display = "block";
                 });
             });
         
-            // Close modal
             closeModalButton.addEventListener("click", () => {
                 reviewModal.style.display = "none";
-                bookReviewInput.value = ""; // Clear review input
+                bookReviewInput.value = "";
             });
         
-            // Add delete functionality
             bookList.addEventListener("click", (e) => {
                 if (e.target.classList.contains("delete-button")) {
                     const bookItem = e.target.closest(".book");
                     const title = bookItem.querySelector(".book-title").textContent;
         
-                    // Remove book from DOM
                     bookItem.remove();
         
-                    // Update localStorage
                     const books = JSON.parse(localStorage.getItem("currentlyReadingBooks")) || [];
                     const updatedBooks = books.filter((b) => b.title !== title);
                     localStorage.setItem("currentlyReadingBooks", JSON.stringify(updatedBooks));
         
-                    // Show "No books" message if list is empty
                     if (bookList.children.length === 0) {
                         noBooksMessage.style.display = "block";
                     }
@@ -123,17 +110,14 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });               
     
-        // Добавяне на обработчик за изтриване на книгата
         const deleteButton = bookItem.querySelector(".delete-button");
         deleteButton.addEventListener("click", () => {
             bookItem.remove();
     
-            // Актуализиране на localStorage
             const books = JSON.parse(localStorage.getItem("currentlyReadingBooks")) || [];
             const updatedBooks = books.filter((b) => b.title !== book.title);
             saveBooks(updatedBooks);
     
-            // Показване на съобщението, ако няма книги
             if (bookList.children.length === 1) {
                 noBooksMessage.style.display = "block";
             }
@@ -141,12 +125,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
        
 
-    // Функция за запазване на книгите в localStorage
     const saveBooks = (books) => {
         localStorage.setItem("currentlyReadingBooks", JSON.stringify(books));
     };
 
-    // Обработчик за добавяне на нова книга
     modalAddButton.addEventListener("click", () => {
         const title = bookTitleInput.value.trim();
         const author = bookAuthorInput.value.trim();
@@ -156,12 +138,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const book = { title, author, cover };
             addBookToDOM(book);
 
-            // Запазване на книгата в localStorage
             const books = JSON.parse(localStorage.getItem("currentlyReadingBooks")) || [];
             books.push(book);
             saveBooks(books);
 
-            // Нулиране на формата
             bookTitleInput.value = "";
             bookAuthorInput.value = "";
             coverPreview.style.backgroundImage = "";
@@ -172,7 +152,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Обработчик за нулиране на формата
     discardButton.addEventListener("click", () => {
         bookTitleInput.value = "";
         bookAuthorInput.value = "";
@@ -181,7 +160,6 @@ document.addEventListener("DOMContentLoaded", () => {
         addBookModal.style.display = "none";
     });
 
-    // Обработчик за избиране на корица
     coverPreview.addEventListener("click", () => {
         bookCoverInput.click();
     });
@@ -192,19 +170,16 @@ document.addEventListener("DOMContentLoaded", () => {
             const reader = new FileReader();
             reader.onload = (e) => {
                 coverPreview.style.backgroundImage = `url('${e.target.result}')`;
-                coverPreview.style.backgroundSize = "cover"; // Уверяваме се, че използваме 'cover'
-                coverPreview.style.backgroundPosition = "center"; // Центрираме изображението
-                coverPreview.textContent = ""; // Премахваме текста
+                coverPreview.style.backgroundSize = "cover";
+                coverPreview.style.backgroundPosition = "center";
+                coverPreview.textContent = "";
             };
             reader.readAsDataURL(file);
         }
     });    
 
-    // Зареждане на книгите при зареждане на страницата
     loadBooks();
 });
-
-// WORKING DONT TOUCH
 
 document.addEventListener("DOMContentLoaded", () => {
     const reviewModal = document.getElementById("review-modal");
@@ -217,20 +192,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const reviewsContainer = document.getElementById("reviews-container");
     const toBeReviewedBooks = document.querySelectorAll(".to-be-reviewed .book");
 
-    // Функция за извличане на ревютата от Local Storage
     const getReviewsFromLocalStorage = () => {
         return JSON.parse(localStorage.getItem("bookReviews")) || [];
     };
 
-    // Функция за запис на ревюта в Local Storage
     const saveReviewsToLocalStorage = (reviews) => {
         localStorage.setItem("bookReviews", JSON.stringify(reviews));
     };
 
-    // Функция за показване на ревюта
     const displayReviews = () => {
         const reviews = getReviewsFromLocalStorage();
-        reviewsContainer.innerHTML = ''; // Изчистваме текущите ревюта, преди да добавим новите
+        reviewsContainer.innerHTML = '';
 
         reviews.forEach((review, index) => {
             const reviewDiv = document.createElement("div");
@@ -270,7 +242,6 @@ document.addEventListener("DOMContentLoaded", () => {
             reviewsContainer.appendChild(reviewDiv);
         });
 
-        // Добавяне на обработчик за бутона за изтриване
         document.querySelectorAll(".delete-review").forEach((deleteButton) => {
             deleteButton.addEventListener("click", (event) => {
                 const index = event.target.dataset.index;
@@ -280,43 +251,33 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const deleteReview = (index) => {
-        // Вземаме всички ревюта от Local Storage
         const reviews = getReviewsFromLocalStorage();
         
-        // Премахваме избраното ревю
         reviews.splice(index, 1);
         
-        // Записваме обновените ревюта в Local Storage
         saveReviewsToLocalStorage(reviews);
         
-        // Обновяваме списъка с ревюта
         displayReviews();
     };  
 
-    // Отваряне на модалния прозорец при клик върху книга
     toBeReviewedBooks.forEach((book) => {
         book.addEventListener("click", () => {
             const bookCover = book.querySelector("img").src;
 
-            // Задаване на изображението в модалния прозорец
             modalBookCover.src = bookCover;
 
-            // Отваряне на модалния прозорец
             reviewModal.style.display = "block";
         });
     });
 
-    // Затваряне на модалния прозорец
     closeModalButton.addEventListener("click", () => {
         reviewModal.style.display = "none";
 
-        // Изчистване на полетата за вход
         bookTitleInput.value = "";
         bookAuthorInput.value = "";
         bookReviewInput.value = "";
     });
 
-    // Добавяне на ревю в Local Storage
     addReviewButton.addEventListener("click", () => {
         const reviewTitle = bookTitleInput.value;
         const reviewAuthor = bookAuthorInput.value;
@@ -328,37 +289,28 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Вземане на текущите ревюта от Local Storage
         const reviews = getReviewsFromLocalStorage();
 
-        // Добавяне на новото ревю с фиксирана профилна снимка и име
         reviews.push({
             title: reviewTitle,
             author: reviewAuthor,
             text: reviewText,
             cover: reviewCover,
-            profilePic: "./images/360_F_266724172_Iy8gdKgMa7XmrhYYxLCxyhx6J7070Pr8.jpg", // Профилна снимка с котката
-            userName: "Test User", // Име на потребителя, което е фиксирано
+            profilePic: "./images/360_F_266724172_Iy8gdKgMa7XmrhYYxLCxyhx6J7070Pr8.jpg",
+            userName: "Test User",
             likeCount: 1,
         });
 
-        // Записване в Local Storage
         saveReviewsToLocalStorage(reviews);
 
-        // Обновяване на ревютата
         displayReviews();
 
-        // Затваряне на модалния прозорец
         reviewModal.style.display = "none";
 
-        // Изчистване на полетата
         bookTitleInput.value = "";
         bookAuthorInput.value = "";
         bookReviewInput.value = "";
     });
 
-    // Показване на ревюта при зареждане на страницата
     displayReviews();
 });
-
-//doesnt work

@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
 function handleSignup(event) {
     event.preventDefault();
 
-    // Събиране на потребителски данни
     const userData = {
         first_name: document.getElementById('firstname').value.trim(),
         last_name: document.getElementById('lastname').value.trim(),
@@ -19,9 +18,7 @@ function handleSignup(event) {
         password: document.getElementById('password').value
     };
 
-    // Запазване на данните в localStorage
     localStorage.setItem('userData', JSON.stringify(userData));
 
-    // Пренасочване към signup2.html
     window.location.href = 'signup-2.html';
 }

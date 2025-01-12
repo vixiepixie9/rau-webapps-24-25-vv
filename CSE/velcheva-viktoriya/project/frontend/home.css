@@ -602,13 +602,13 @@ button {
     width: 80px;
     height: 120px;
     background-color: #f0f0f0;
-    background-size: cover; /* Или 'contain', в зависимост от предпочитанията */
+    background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #555; /* Запазване на текста, ако няма изображение */
+    color: #555;
     font-size: 12px;
     text-align: center;
     border: 1px solid #ccc;
@@ -622,7 +622,7 @@ button {
 }
 
 .user-name {
-    margin-right: auto; /* Това ще подтикне името на потребителя вляво */
+    margin-right: auto;
 }
 
 .delete-review {

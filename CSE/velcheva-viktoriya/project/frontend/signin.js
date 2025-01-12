@@ -19,7 +19,6 @@ function signin() {
         return;
     }
 
-    // Вземи потребителските данни от localStorage
     const userData = JSON.parse(localStorage.getItem('userData'));
 
     if (!userData) {
@@ -28,7 +27,6 @@ function signin() {
         return;
     }
 
-    // Проверка на имейл и парола
     if (userData.email === email) {
         if (userData.password === password) {
             window.location.replace("home.html");
