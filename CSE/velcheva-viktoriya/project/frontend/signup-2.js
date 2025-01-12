@@ -72,7 +72,7 @@ function takePhoto(event) {
 }
 
 function updateFileName() {
-    const fileInput = document.getElementById('photoUpload');
+    const fileInput = document.getElementById('fileInput');
     const fileLabel = document.getElementById('fileLabel');
     fileLabel.textContent = fileInput.files.length > 0 ? fileInput.files[0].name : 'Choose a photo';
 }
@@ -82,7 +82,7 @@ function handleStep2(event) {
     const userData = JSON.parse(localStorage.getItem('userData')) || {};
     
     // Проверка дали снимката е добавена
-    const photoInput = document.getElementById('upload_id');
+    const photoInput = document.getElementById('fileInput');
     if (photoInput.files.length > 0) {
         const file = photoInput.files[0];
         userData.photo = file.name; // Снимката може да се запише в базата или localStorage

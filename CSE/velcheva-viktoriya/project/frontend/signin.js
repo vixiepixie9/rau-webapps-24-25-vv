@@ -1,10 +1,3 @@
-const USERS = [
-    { email: "a@b.c", password: "1345678900" },
-    { email: "d@b.c", password: "1345678901" },
-    { email: "e@b.c", password: "1345678902" },
-    { email: "f@b.c", password: "1345678903" },
-];
-
 const form = document.querySelector('form');
 form.addEventListener('submit', stopFormDefault);
 
@@ -22,28 +15,29 @@ function signin() {
 
     if (email === "" || password === "") {
         errorParagraph.innerText = "Please fill in both fields.";
-        errorParagraph.style.color = "red";    
+        errorParagraph.style.color = "red";
         return;
     }
 
-    let userFound = false;
+    // Вземи потребителските данни от localStorage
+    const userData = JSON.parse(localStorage.getItem('userData'));
 
-    for (let user of USERS) {
-        if (user.email === email) {
-            userFound = true;
-            if (user.password === password) {
-                window.location.replace("home.html");
-                return;
-            } else {
-                errorParagraph.innerText = "Invalid password. Please try again.";
-                errorParagraph.style.color = "red";    
-                return;
-            }
-        }
+    if (!userData) {
+        errorParagraph.innerText = "No registered user found. Please sign up.";
+        errorParagraph.style.color = "red";
+        return;
     }
 
-    if (!userFound) {
+    // Проверка на имейл и парола
+    if (userData.email === email) {
+        if (userData.password === password) {
+            window.location.replace("home.html");
+        } else {
+            errorParagraph.innerText = "Invalid password. Please try again.";
+            errorParagraph.style.color = "red";
+        }
+    } else {
         errorParagraph.innerText = "User does not exist. Please try again.";
-        errorParagraph.style.color = "red";    
+        errorParagraph.style.color = "red";
     }
 }
